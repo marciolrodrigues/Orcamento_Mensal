@@ -158,7 +158,6 @@ def listar_formas_pgto():
         except FileNotFoundError:
             print('Não existem Formas de Pagamento Cadastradas')
             sleep(2)
-            menu_cadastro()
     except ValueError:
         cartoes = pd.DataFrame()
     try:
@@ -168,10 +167,9 @@ def listar_formas_pgto():
     except ValueError:
         contas = pd.DataFrame()
 
+    resultado = pd.merge(contas[['cod', 'nome']], cartoes[['cod', 'nome']], how='outer').sort_values('cod')
+    print(resultado)
 
-    resultado = pd.merge(contas[['cod', 'nome']], cartoes[['cod', 'nome']], on='cod', how='outer').dropna()
-
-    print(resultado.values)
 
 def cadastrar_conta():
     sheet = 'Contas'
@@ -224,7 +222,7 @@ def cadastrar_despesa():
 
     listar_categorias()
 
-    categoria = input('Digite o código da categoria: ')
+    categoria = int(input('Digite o código da categoria: '))
     data = input('Digite a data da despesa: ')
     descricao = input('Digite a descrição da despesa: ')
 
@@ -246,75 +244,3 @@ def cadastrar_despesa():
 
 menu_principal()
 
-# print(despesa1.cod)
-# print(despesa1.data)
-# print(despesa1.descricao)
-# print(despesa1.categoria.cod)
-# print(despesa1.categoria.nome)
-# print(despesa1.categoria.descicao)
-# print(despesa1.categoria.subtipo)
-# print(despesa1.forma_pgto.cod)
-# print(despesa1.forma_pgto.banco)
-# print(despesa1.forma_pgto.limite)
-# print('\n')
-# print(despesa2.cod)
-# print(despesa2.data)
-# print(despesa2.descricao)
-# print(despesa2.forma_pgto.cod)
-# print(despesa2.forma_pgto.banco)
-# print(despesa2.forma_pgto.limite)
-# print(despesa2.categoria)
-
-#
-# print(receita1.cod)
-# print(receita1.fonte)
-# print(receita1.valor)
-# print(receita1.data)
-# print(f'{receita1.descricao}\n')
-# print(receita1.conta.cod)
-# print(receita1.conta.banco)
-# print(receita1.conta.saldo)
-# print(receita1.conta.limite)
-#
-# print(receita1.cod)
-# receita1.fonte = '13º salário'
-# print(receita1.fonte)
-# print(receita1.valor)
-# print(receita1.data)
-# print(f'{receita1.descricao}\n')
-# print(receita1.conta.cod)
-# print(receita1.conta.banco)
-# receita1.conta.saldo = 20000
-# print(receita1.conta.saldo)
-# print(receita1.conta.limite)
-# print(conta1.saldo)
-
-# print(conta1.cod)
-# print(conta1.banco)
-# print(conta1.saldo)
-# print(conta1.limite)
-#
-# print(conta1.cod)
-# conta1.banco = 'Caixa'
-# print(conta1.banco)
-# conta1.saldo = 200000
-# print(conta1.saldo)
-# print(conta1.limite)
-
-# print(cat1.descicao)
-# cat1.descicao = 'Alimentos não perecíveis'
-# print(cat1.descicao)
-
-# print(cartao1.bandeira)
-# print(cartao1.vcto)
-# print(cartao1.cod)
-# print(cartao1.banco)
-# print(cartao1.limite)
-#
-# cartao1.bandeira = 'Master'
-# print(cartao1.bandeira)
-# print(cartao1.vcto)
-# print(cartao1.cod)
-# cartao1.banco = 'Bradesco'
-# print(cartao1.banco)
-# print(cartao1.limite)
