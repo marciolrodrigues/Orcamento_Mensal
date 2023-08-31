@@ -2,21 +2,13 @@ from models.formas_pgto import FormaPgto
 
 
 class Conta(FormaPgto):
-    def __init__(self: object, cod: int, banco: str, saldo: float, limite: float) -> None:
-        super().__init__(cod, banco, limite)
+    def __init__(self: object, cod: int, saldo: float, limite: float) -> None:
+        super().__init__(cod, limite)
         self.__saldo = saldo
 
     @property
     def cod(self: object) -> int:
         return self._FormaPgto__cod
-
-    @property
-    def banco(self: object) -> str:
-        return self._FormaPgto__banco
-
-    @banco.setter
-    def banco(self: object, banco: str) -> None:
-        self._FormaPgto__banco = banco
 
     @property
     def limite(self: object) -> str:

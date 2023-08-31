@@ -1,21 +1,10 @@
-from models.categorias import Categoria
-from models.cartoes import Cartao
-from models.contas import Conta
-from models.receitas import Receita
-from models.despesas import Despesa
+from typing import List
 from time import sleep
 from utils.helper import verificar_id
 import pandas as pd
 
-cat1 = Categoria(1, 'Mercado', 'Alimentação', 'Alimentos comprados no mercado')
-cartao1 = Cartao('VISA', 20, 1, 'Nu Bank', 2000)
-conta1 = Conta(1, 'Itau', 130000, 2000)
-receita1 = Receita(2, 'Salário', 11000, '20/08/2023', 'Pagamento de Salário', conta1)
-despesa1 = Despesa(2, cat1, '20/01/2023', 'Mercado', cartao1)
-despesa2 = Despesa(3, cat1, '14/12/2002', 'Seguro', conta1)
 
-
-nome_aplicativo = ' Controle de Orçamento Mensal '
+nome_aplicativo = ' CONTROLE DE ORÇAMENTO MENSAL '
 
 
 # Construção do Cabeçalho de Página
@@ -25,7 +14,6 @@ def cabecalho(submenu: str) -> None:
     print(f'*' * 100 + '\n')
     if submenu != '':
         print(f'{submenu:*^100}\n')
-    print('ESCOLHA UMA OPÇÃO')
 
 
 # Construção do Cabeçalho do Menu Principal
@@ -62,6 +50,7 @@ def menu_cadastro():
     print('2 - Cadastrar Conta')
     print('3 - Cadastrar Cartão')
     print('4 - Cadastrar Despesa')
+    print('5 - Cadastrar Receitas')
     print('0 - Voltar ao menu principal')
 
     opcao = int(input('Digite a opção escolhida: '))
@@ -73,6 +62,8 @@ def menu_cadastro():
         cadastrar_cartao()
     elif opcao == 4:
         cadastrar_despesa()
+    elif opcao == 5:
+        cadastrar_receita()
     elif opcao == 0:
         menu_principal()
     else:
@@ -82,11 +73,59 @@ def menu_cadastro():
 
 
 def menu_consulta():
-    pass
+    cabecalho(' MENU DE CONSULTA ')
+    print('1 - Consultar Categoria')
+    print('2 - Consultar Conta')
+    print('3 - Consultar Cartão')
+    print('4 - Consultar Despesa')
+    print('5 - Consultar Receitas')
+    print('0 - Voltar ao menu principal')
+
+    opcao = int(input('Digite a opção escolhida: '))
+    if opcao == 1:
+        consultas('Categorias')
+    elif opcao == 2:
+        consultas('Contas')
+    elif opcao == 3:
+        consultas('Cartões')
+    elif opcao == 4:
+        consultas('Despesas')
+    elif opcao == 5:
+        consultas('Receitas')
+    elif opcao == 0:
+        menu_principal()
+    else:
+        print('Opção inválida!')
+        sleep(2)
+    menu_consulta()
 
 
 def menu_edicao():
-    pass
+    cabecalho(' MENU DE EDIÇÃO ')
+    print('1 - Editar Categoria')
+    print('2 - Editar Conta')
+    print('3 - Editar Cartão')
+    print('4 - Editar Despesa')
+    print('5 - Editar Receitas')
+    print('0 - Voltar ao menu principal')
+
+    opcao = int(input('Digite a opção escolhida: '))
+    if opcao == 1:
+        editar('Categorias')
+    elif opcao == 2:
+        editar('Contas')
+    elif opcao == 3:
+        editar('Cartões')
+    elif opcao == 4:
+        editar('Despesas')
+    elif opcao == 5:
+        editar('Receitas')
+    elif opcao == 0:
+        menu_principal()
+    else:
+        print('Opção inválida!')
+        sleep(2)
+        menu_edicao()
 
 
 def menu_exclusao():
@@ -108,12 +147,77 @@ def gravar(nova_linha, sheet):
 
     with pd.ExcelWriter('data/orcamento.xlsx', mode='a', if_sheet_exists='replace') as writer:
         try:
-            writer.sheets = {ws.title: ws for ws in writer.book.worksheets}
+            # writer.sheets = {ws.title: ws for ws in writer.book.worksheets}
             arquivo.to_excel(writer, sheet_name=sheet, index=False)
         except AttributeError:
             arquivo.to_excel(writer, sheet_name=sheet, index=False)
 
     print('Cadastro efetuado com sucesso')
+
+
+def consultas(sheet: str, titulo=True) -> List:
+    codigos = []
+    if titulo:
+        cabecalho(f' CONSULTA DE {sheet.upper()} ')
+    try:
+        arquivo = pd.read_excel('data/orcamento.xlsx', sheet_name=sheet)
+        codigos = arquivo['cod'].tolist()
+        arquivo = arquivo.fillna('-')
+        dict_arquivo = arquivo.set_index('cod').to_dict()
+        list_arquivo = list(dict_arquivo.keys())
+
+        print('COD' + (17 * ' '), end='')
+
+        for item in list_arquivo:
+            print(item.upper(), end='')
+            print(' ' * (20 - len(item)), end='')
+
+        print()
+
+        for item in codigos:
+            print(item, end='')
+            print(' ' * (20 - len(str(item))), end='')
+            for col in list_arquivo:
+                print(dict_arquivo[f'{col}'][item], end='')
+                print(' ' * (20 - len(str(dict_arquivo[f'{col}'][item]))), end='')
+            print('')
+    except FileNotFoundError:
+        print('Não existem categorias cadastradas!')
+        sleep(2)
+    except ValueError:
+        print('Não existem categorias cadastradas!')
+        sleep(2)
+    if titulo:
+        input('Digite ENTER para continuar')
+    return codigos
+
+
+def editar(sheet: str) -> None:
+    codigos = consultas(sheet, False)
+    cod_alterar = int(input('Digite o código que deseja efetuar a alteração: '))
+    if cod_alterar in codigos:
+        try:
+            arquivo = pd.read_excel('data/orcamento.xlsx', sheet_name=sheet)
+            print(arquivo.loc[arquivo['cod'] == cod_alterar])
+            campo_alterar = input('Digite o nome do campo à ser alterado: ')
+            if campo_alterar.lower() in arquivo:
+                novo_valor = input('Digite o novo valor para o campo escolhido: ')
+                arquivo.loc[arquivo['cod'] == cod_alterar, campo_alterar.lower()] = novo_valor
+                with pd.ExcelWriter('data/orcamento.xlsx', mode='a', if_sheet_exists='replace') as writer:
+                    arquivo.to_excel(writer, sheet_name=sheet, index=False)
+            else:
+                print("Campo não localizado")
+
+        except FileNotFoundError:
+            print(f'Não existem {sheet} cadastrados(as)!')
+            sleep(2)
+        except ValueError:
+            print(f'Não existem {sheet} cadastrados(as)!')
+            sleep(2)
+    else:
+        print('O código digitado não existe!')
+
+    menu_edicao()
 
 
 def cadastrar_categoria():
@@ -129,7 +233,6 @@ def cadastrar_categoria():
     }
     gravar(nova_linha, sheet)
 
-
     sleep(2)
     menu_cadastro()
 
@@ -137,7 +240,9 @@ def cadastrar_categoria():
 def listar_categorias():
     try:
         arquivo = pd.read_excel('data/orcamento.xlsx', sheet_name='Categorias')
-        print(arquivo.values)
+        dict_arquivo = arquivo.set_index('cod').to_dict()
+        for chave, valor in dict_arquivo['nome'].items():
+            print(f'{chave}: {valor}')
     except FileNotFoundError:
         print('Não existem categorias cadastradas!')
         sleep(2)
@@ -167,8 +272,13 @@ def listar_formas_pgto():
     except ValueError:
         contas = pd.DataFrame()
 
-    resultado = pd.merge(contas[['cod', 'nome']], cartoes[['cod', 'nome']], how='outer').sort_values('cod')
-    print(resultado)
+    resultado = pd.merge(contas[['cod', 'nome']], cartoes[['cod', 'nome']], how='outer').set_index('cod').sort_values(
+        'cod')
+
+    dict_resultado = resultado.to_dict()
+
+    for chave, valor in dict_resultado['nome'].items():
+        print(f'{chave}: {valor}')
 
 
 def cadastrar_conta():
@@ -176,13 +286,11 @@ def cadastrar_conta():
     cabecalho(f' CADASTRO DE {sheet.upper()} ')
     id_atual = verificar_id(sheet)  # Busca no arquivo qual seria o id atual para cadastrar novo registro
     nome = input('Digite o nome da nova conta: ')
-    banco = input('Digite o banco da nova conta: ')
     limite = float(input('Digite o limite atual da nova conta: '))
     saldo = float(input('Digite o saldo atual da nova conta: '))
     nova_linha = {
         'cod': id_atual,
         'nome': nome,
-        'banco': banco,
         'limite': limite,
         'saldo': saldo
     }
@@ -198,14 +306,12 @@ def cadastrar_cartao():
     cabecalho(f' CADASTRO DE {sheet.upper()} ')
     id_atual = verificar_id(sheet)  # Busca no arquivo qual seria o id atual para cadastrar novo registro
     nome = input('Digite o nome do novo cartão: ')
-    banco = input('Digite o banco do novo cartão: ')
     bandeira = input('Digite a bandeira do novo cartão: ')
     vcto = input('Digite o vencimento do novo cartão: ')
     limite = float(input('Digite o limite do novo cartão: '))
     nova_linha = {
         'cod': id_atual,
         'nome': nome,
-        'banco': banco,
         'bandeira': bandeira,
         'vencimento': vcto,
         'limite': limite,
@@ -228,7 +334,6 @@ def cadastrar_despesa():
 
     listar_formas_pgto()
 
-
     forma_pgto = input('Digite o código da forma de pagamento: ')
     nova_linha = {
         'cod': id_atual,
@@ -242,5 +347,28 @@ def cadastrar_despesa():
     menu_cadastro()
 
 
-menu_principal()
+def cadastrar_receita():
+    sheet = 'Receitas'
+    cabecalho(f' CADASTRO DE {sheet.upper()} ')
+    id_atual = verificar_id(sheet)  # Busca no arquivo qual seria o id atual para cadastrar novo registro
+    fonte = input('Digite a fonte da nova receita: ')
+    valor = input('Digite o valor da nova receita: ')
+    data = input('Digite a data da nova receita: ')
+    descricao = input('Digite a descrição da nova receita: ')
+    consultas('Contas', False)
+    conta = input('Digite o código da conta da nova receita: ')
+    nova_linha = {
+        'cod': id_atual,
+        'fonte': fonte,
+        'valor': valor,
+        'data': data,
+        'descricao': descricao,
+        'conta': conta
+    }
+    gravar(nova_linha, sheet)
 
+    sleep(2)
+    menu_cadastro()
+
+
+menu_principal()
